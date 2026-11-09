@@ -1,0 +1,17 @@
+.project-card { cursor: pointer; }
+.project-card:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
+.project-preview { position: relative; }
+.project-preview-hint { position: absolute; right: 9px; bottom: 8px; display: inline-flex; align-items: center; gap: 5px; padding: 4px 7px; font-size: 9px; border: 1px solid #a9dab7; border-radius: 5px; background: #fffffff2; color: var(--green); opacity: 0; transform: translateY(3px); transition: opacity .2s, transform .2s; }
+@media (hover: hover) and (pointer: fine) { .project-card:hover .project-preview-hint { opacity: 1; transform: translateY(0); } }
+.project-preview:focus-visible .project-preview-hint { opacity: 1; transform: none; }
+.project-preview-modal { width: min(780px, calc(100% - 28px)); padding: 22px; overscroll-behavior: contain; scrollbar-width: thin; }
+.preview-modal-header { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+.preview-modal-header .project-category { margin: 0; }
+.project-preview-modal .dialog-content { gap: 14px; }
+.project-preview-modal .modal-project-image { width: 100%; height: auto; object-fit: contain; max-height: 300px; background: #f8fafc; border: 1px solid var(--border); }
+.project-features h3 { font-size: 12px; font-weight: 700; margin-bottom: 8px; }
+.project-features h3 span { color: var(--green); }
+.project-features ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 20px; font-size: 12px; }
+.project-features li::before { content: '> '; color: var(--green); }
+.preview-modal-links { display: flex; flex-wrap: wrap; gap: 10px; }
+@media (max-width: 640px) { .project-preview-modal { padding: 16px; } .project-preview-modal .dialog-content p { font-size: 12px; } .project-features ul { grid-template-columns: 1fr; } }
