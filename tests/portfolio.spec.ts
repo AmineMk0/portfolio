@@ -44,7 +44,7 @@ test('project details and CV notice work without fabricated URLs', async ({ page
   expect(errors).toEqual([]);
 });
 
-for (const width of [320, 360, 390, 641, 768, 900, 1024, 1089, 1440, 1920]) {
+for (const width of [320, 360, 390, 641, 768, 781, 900, 1024, 1089, 1440, 1920]) {
   test(`responsive layout at ${width}px has no overflow`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
@@ -72,12 +72,66 @@ for (const width of [320, 360, 390, 641, 768, 900, 1024, 1089, 1440, 1920]) {
       await expect.poll(() => img.evaluate(node => (node as HTMLImageElement).complete && (node as HTMLImageElement).naturalWidth > 0)).toBe(true);
     }
     await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
-    if (width < 640) {
+    if (width <= 780) {
       await page.getByRole('button', { name: 'Open navigation' }).click();
       await page.getByRole('link', { name: '03_PROJECTS' }).click();
       await expect(page).toHaveURL(/#projects$/);
     }
     if ([390, 1089, 1440, 1920].includes(width)) await page.screenshot({ path: `test-results/portfolio-${width}.png`, fullPage: true });
+  });
+}
+
+for (const width of [390, 1440]) {
+  test(`education timeline and navigation work at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.emulateMedia({ reducedMotion: width === 390 ? 'reduce' : 'no-preference' });
+    await page.goto('/');
+
+    const education = page.getByRole('region', { name: '// EDUCATION_JOURNEY' });
+    const cards = education.getByRole('article');
+    const connectors = education.locator('.education-connector');
+    await expect(cards).toHaveCount(3);
+    await expect(cards.locator('.education-number')).toHaveText(['01', '02', '03']);
+    if (width === 390) {
+      await expect(cards.first()).toHaveCSS('opacity', '1');
+      await expect(connectors.first()).toHaveCSS('transform', 'none');
+      await page.getByRole('button', { name: 'Open navigation' }).click();
+    } else {
+      await expect(cards.first()).toHaveCSS('opacity', '0');
+    }
+
+    const link = page.getByRole('link', { name: '06_EDUCATION' });
+    await link.click();
+    await expect(page).toHaveURL(/#education$/);
+    await expect(education).toBeInViewport();
+    if (width === 390) {
+      await expect(page.getByRole('button', { name: 'Open navigation' })).toHaveAttribute('aria-expanded', 'false');
+    }
+    await expect(page.locator('a[href="#education"]')).toHaveAttribute('aria-current', 'location');
+    await expect(cards.nth(0)).toContainText('2021');
+    await expect(cards.nth(0)).toContainText('Baccalauréat Sciences Physiques');
+    await expect(cards.nth(1)).toContainText('OFPPT');
+    await expect(cards.nth(1)).toContainText('Diplôme de Technicien Spécialisé en Développement Digital');
+    await expect(cards.nth(1)).toContainText('Full Stack Development');
+    await expect(cards.nth(2)).toContainText('ESTEM');
+    await expect(cards.nth(2)).toContainText('Licence en Génie Logiciel');
+    const currentBadge = cards.nth(2).getByText('IN PROGRESS', { exact: true });
+    await expect(currentBadge).toBeVisible();
+    await expect(currentBadge).toHaveCSS('color', 'rgb(12, 121, 59)');
+    await expect(education.getByText('Completed', { exact: true })).toHaveCount(2);
+    await expect(cards.last()).toHaveCSS('opacity', '1');
+    if (width === 1440) await expect(connectors.last()).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
+
+    const [first, second] = await cards.evaluateAll(elements =>
+      elements.map(element => {
+        const { x, y } = element.getBoundingClientRect();
+        return { x, y };
+      }),
+    );
+    expect(first.x).toBe(second.x);
+    expect(first.y).toBeLessThan(second.y);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await education.screenshot({ path: `test-results/education-${width}.png` });
   });
 }
 

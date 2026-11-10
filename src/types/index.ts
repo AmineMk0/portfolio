@@ -11,6 +11,16 @@ export interface Project {
   url?: string;
 }
 
+export interface EducationEntry {
+  id: string;
+  degree: string;
+  icon: 'science' | 'diploma' | 'degree';
+  year?: number;
+  institution?: string;
+  specialization?: string;
+  status: 'Completed' | 'Currently Studying';
+}
+
 export interface Profile {
   name: string;
   role: string;

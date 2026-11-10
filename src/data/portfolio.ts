@@ -1,4 +1,4 @@
-import type { Profile, Project } from '../types';
+import type { EducationEntry, Profile, Project } from '../types';
 import portrait from '../assets/portrait.png';
 import carRent from '../assets/carrent.png';
 import electroShop from '../assets/electroshop.png';
@@ -9,6 +9,31 @@ export const profile: Profile = {
   name: 'Amine Moutaki', role: 'Fullstack Developer', location: 'Morocco',
   experience: '2+ Years', availability: 'Open for new projects', photo: portrait,
 };
+
+export const education: EducationEntry[] = [
+  {
+    id: 'baccalaureat',
+    degree: 'Baccalauréat Sciences Physiques',
+    icon: 'science',
+    year: 2021,
+    status: 'Completed',
+  },
+  {
+    id: 'digital-development',
+    degree: 'Diplôme de Technicien Spécialisé en Développement Digital',
+    icon: 'diploma',
+    institution: 'OFPPT',
+    specialization: 'Full Stack Development',
+    status: 'Completed',
+  },
+  {
+    id: 'software-engineering',
+    degree: 'Licence en Génie Logiciel',
+    icon: 'degree',
+    institution: 'ESTEM',
+    status: 'Currently Studying',
+  },
+];
 
 export const projects: Project[] = [
   { id: '01', name: 'CarRent', category: 'CAR RENTAL', description: 'Car rental platform with vehicle management, reservations, contracts and invoices.', image: carRent, technologies: ['React', 'Laravel', 'MySQL'], features: ['Vehicle management', 'Reservations', 'Contracts', 'Invoices'] },

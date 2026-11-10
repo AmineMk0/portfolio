@@ -1,0 +1,138 @@
+.education {
+  margin-top: 18px;
+}
+
+.education-timeline {
+  --education-gap: 8px;
+  --education-marker-offset: 15px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--education-gap);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.education-step {
+  position: relative;
+  display: grid;
+  min-width: 0;
+  padding-left: 20px;
+}
+
+.education-marker {
+  position: absolute;
+  top: var(--education-marker-offset);
+  left: 0;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--green);
+  border-radius: 50%;
+  background: #fff;
+  z-index: 1;
+}
+
+.education-connector {
+  position: absolute;
+  top: calc(var(--education-marker-offset) + 5px);
+  left: 4px;
+  width: 2px;
+  height: calc(100% + var(--education-gap));
+  background: var(--green);
+  transform: scaleY(var(--education-line-progress, 1));
+  transform-origin: top;
+}
+
+.education-card {
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color .2s, box-shadow .2s;
+  overflow-wrap: anywhere;
+}
+
+@media (hover: hover) {
+  .education-card:hover {
+    border-color: #9cd6ad;
+    box-shadow: 0 4px 16px #0c793b06;
+  }
+}
+
+.education-card-meta,
+.education-card-details {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.education-card-meta {
+  justify-content: space-between;
+  margin-bottom: 4px;
+  color: #52616c;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.education-number {
+  color: #111827;
+  font-size: 14px;
+}
+
+.education-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: #f8fafc;
+  font-weight: 500;
+}
+
+.education-status .status-dot {
+  width: 6px;
+  height: 6px;
+}
+
+.education-status-current {
+  color: #0c793b;
+  border-color: #9cd6ad;
+  background: color-mix(in srgb, var(--green) 7%, #fff);
+  font-weight: 700;
+}
+
+.education-card h3 {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.education-card h3 svg {
+  align-self: flex-start;
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: #0c793b;
+}
+
+.education-card p {
+  margin-top: 3px;
+  color: #52616c;
+  font-size: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .education-connector {
+    transform: none;
+  }
+
+  .education-card {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

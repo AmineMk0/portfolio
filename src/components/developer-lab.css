@@ -1,5 +1,4 @@
 .developer-lab { margin-top: 18px; }
-.lab-subtitle { color: #697586; font-size: 11px; margin-top: 5px; line-height: 1.5; }
 .lab-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 .lab-panel { height: 356px; min-width: 0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--border); border-radius: 12px; background: white; transition: border-color .2s, box-shadow .2s; }
 .lab-panel:hover, .lab-panel:focus-within { border-color: #9cd6ad; box-shadow: 0 4px 16px #0c793b06; }

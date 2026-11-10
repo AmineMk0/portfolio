@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Maximize, Minimize, Menu, X } from 'lucide-react';
 import { profile } from '../data/portfolio';
 
-const links = [['home', '01_HOME'], ['about', '02_ABOUT'], ['projects', '03_PROJECTS'], ['stack', '04_STACK'], ['contact', '05_CONTACT']] as const;
+const links = [['home', '01_HOME'], ['about', '02_ABOUT'], ['projects', '03_PROJECTS'], ['stack', '04_STACK'], ['contact', '05_CONTACT'], ['education', '06_EDUCATION']] as const;
 
 export function Navbar() {
   const [active, setActive] = useState('home');
@@ -10,19 +10,37 @@ export function Navbar() {
   const [fullscreen, setFullscreen] = useState(false);
   useEffect(() => {
     const track = () => {
-      const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 30;
-      if (nearBottom && window.scrollY > 100) return setActive('contact');
-      let current = 'home';
-      for (const [id] of links) {
-        if (id !== 'about' && (document.getElementById(id)?.getBoundingClientRect().top ?? Infinity) < 180) current = id;
+      const hash = window.location.hash.slice(1);
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 30;
+      if (atBottom && window.scrollY > 100) {
+        const target = document.getElementById(hash)?.getBoundingClientRect();
+        const visibleAnchor = (hash === 'education' || hash === 'stack') && target && target.top >= 0 && target.top < window.innerHeight;
+        return setActive(visibleAnchor ? hash : 'contact');
       }
-      if (window.location.hash === '#about' && current === 'home') current = 'about';
+
+      let current = 'home';
+      let closestTop = -Infinity;
+      for (const [id] of links) {
+        if (id === 'about') continue;
+        const top = document.getElementById(id)?.getBoundingClientRect().top ?? Infinity;
+        if (top < 180 && top >= closestTop) {
+          current = id;
+          closestTop = top;
+        }
+      }
+      if (hash === 'about' && current === 'home') current = 'about';
       setActive(current);
     };
     const onFullscreen = () => setFullscreen(Boolean(document.fullscreenElement));
+    track();
     window.addEventListener('scroll', track, { passive: true });
+    window.addEventListener('hashchange', track);
     document.addEventListener('fullscreenchange', onFullscreen);
-    return () => { window.removeEventListener('scroll', track); document.removeEventListener('fullscreenchange', onFullscreen); };
+    return () => {
+      window.removeEventListener('scroll', track);
+      window.removeEventListener('hashchange', track);
+      document.removeEventListener('fullscreenchange', onFullscreen);
+    };
   }, []);
   async function toggleFullscreen() {
     try {

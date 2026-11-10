@@ -7,11 +7,13 @@ import { SystemLog } from './components/SystemLog';
 import { TechStack } from './components/TechStack';
 import { Footer } from './components/Footer';
 import { DeveloperLab } from './components/DeveloperLab';
+import { Education } from './components/Education';
+import { education } from './data/portfolio';
 
 export default function App() {
   return <MotionConfig reducedMotion="user"><div className="site-shell" id="home">
     <Navbar />
-    <main><Hero /><MiniGame /><Projects /><DeveloperLab /><div className="system-panel"><SystemLog /><TechStack /></div></main>
+    <main><Hero /><MiniGame /><Projects /><DeveloperLab /><Education entries={education} /><div className="system-panel"><SystemLog /><TechStack /></div></main>
     <Footer />
   </div></MotionConfig>;
 }
