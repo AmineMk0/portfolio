@@ -1,6 +1,20 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { resolve, sep } from 'node:path';
+
+// Feature checks dismiss the intro while temporary replay-on-refresh mode is enabled.
+async function dismissIntro(page: Page) {
+  if (await page.locator('.intro-animation').count()) {
+    await page.getByRole('button', { name: 'SKIP INTRO' }).click();
+    await expect(page.locator('.intro-animation')).toHaveCount(0);
+  }
+}
+
+async function openPortfolio(page: Page) {
+  await page.goto('/');
+  await dismissIntro(page);
+}
 
 // Serve the real production build through interception, even without network access.
 test.beforeEach(async ({ page }) => {
@@ -17,7 +31,7 @@ test.beforeEach(async ({ page }) => {
 
 test('game awards XP, finishes after 30 seconds and persists best score', async ({ page }) => {
   await page.clock.install();
-  await page.goto('/');
+  await openPortfolio(page);
   await page.getByRole('button', { name: 'START GAME' }).click();
   await expect(page.getByRole('button', { name: 'Catch bug for 10 XP' })).toHaveCount(5);
   await page.getByRole('button', { name: 'Catch bug for 10 XP' }).first().click();
@@ -27,14 +41,14 @@ test('game awards XP, finishes after 30 seconds and persists best score', async 
   await expect(page.getByTestId('best')).toHaveText('0010');
   await page.getByRole('button', { name: 'RESTART', exact: true }).first().click();
   await expect(page.getByTestId('score')).toHaveText('0000');
-  await page.reload();
+  await page.reload(); await dismissIntro(page);
   await expect(page.getByTestId('best')).toHaveText('0010');
 });
 
 test('project details and CV notice work without fabricated URLs', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
-  await page.goto('/');
+  await openPortfolio(page);
   await page.getByRole('button', { name: 'View CarRent details' }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
   await page.keyboard.press('Escape');
@@ -47,7 +61,7 @@ test('project details and CV notice work without fabricated URLs', async ({ page
 for (const width of [320, 360, 390, 641, 768, 781, 900, 1024, 1089, 1440, 1920]) {
   test(`responsive layout at ${width}px has no overflow`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto('/');
+    await openPortfolio(page);
     await page.evaluate(() => document.fonts.ready);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     if (width >= 901) {
@@ -81,64 +95,65 @@ for (const width of [320, 360, 390, 641, 768, 781, 900, 1024, 1089, 1440, 1920])
   });
 }
 
-for (const width of [390, 1440]) {
-  test(`education timeline and navigation work at ${width}px`, async ({ page }) => {
+for (const width of [320, 390, 639, 640, 768, 1023, 1024, 1440]) {
+  test(`education cards and navigation work at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
     await page.emulateMedia({ reducedMotion: width === 390 ? 'reduce' : 'no-preference' });
-    await page.goto('/');
+    await openPortfolio(page);
 
-    const education = page.getByRole('region', { name: '// EDUCATION_JOURNEY' });
+    const education = page.getByRole('region', { name: '// EDUCATION', exact: true });
     const cards = education.getByRole('article');
-    const connectors = education.locator('.education-connector');
     await expect(cards).toHaveCount(3);
     await expect(cards.locator('.education-number')).toHaveText(['01', '02', '03']);
-    if (width === 390) {
-      await expect(cards.first()).toHaveCSS('opacity', '1');
-      await expect(connectors.first()).toHaveCSS('transform', 'none');
-      await page.getByRole('button', { name: 'Open navigation' }).click();
-    } else {
-      await expect(cards.first()).toHaveCSS('opacity', '0');
-    }
-
-    const link = page.getByRole('link', { name: '06_EDUCATION' });
-    await link.click();
+    await expect(education.locator('.education-connector, .education-marker, .education-timeline')).toHaveCount(0);
+    if (width === 390) await expect(cards.first()).toHaveCSS('opacity', '1');
+    if (width <= 780) await page.getByRole('button', { name: 'Open navigation' }).click();
+    await page.getByRole('link', { name: '06_EDUCATION' }).click();
     await expect(page).toHaveURL(/#education$/);
     await expect(education).toBeInViewport();
-    if (width === 390) {
-      await expect(page.getByRole('button', { name: 'Open navigation' })).toHaveAttribute('aria-expanded', 'false');
-    }
     await expect(page.locator('a[href="#education"]')).toHaveAttribute('aria-current', 'location');
     await expect(cards.nth(0)).toContainText('2021');
-    await expect(cards.nth(0)).toContainText('Baccalauréat Sciences Physiques');
+    await expect(cards.nth(0).getByRole('heading')).toHaveText('Baccalauréat');
+    await expect(cards.nth(0)).toContainText('Sciences Physiques');
+    await expect(cards.nth(1).getByRole('heading')).toHaveText('Technicien Spécialisé');
+    await expect(cards.nth(1)).toContainText('Développement Digital');
     await expect(cards.nth(1)).toContainText('OFPPT');
-    await expect(cards.nth(1)).toContainText('Diplôme de Technicien Spécialisé en Développement Digital');
     await expect(cards.nth(1)).toContainText('Full Stack Development');
+    await expect(cards.nth(2).getByRole('heading')).toHaveText('Licence en Génie Logiciel');
     await expect(cards.nth(2)).toContainText('ESTEM');
-    await expect(cards.nth(2)).toContainText('Licence en Génie Logiciel');
-    const currentBadge = cards.nth(2).getByText('IN PROGRESS', { exact: true });
-    await expect(currentBadge).toBeVisible();
-    await expect(currentBadge).toHaveCSS('color', 'rgb(12, 121, 59)');
-    await expect(education.getByText('Completed', { exact: true })).toHaveCount(2);
+    await expect(cards.nth(2)).toContainText('Currently Studying');
+    await expect(cards.locator('.education-status')).toHaveText(['COMPLETED', 'COMPLETED', 'IN PROGRESS']);
+    await cards.last().scrollIntoViewIfNeeded();
     await expect(cards.last()).toHaveCSS('opacity', '1');
-    if (width === 1440) await expect(connectors.last()).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 0)');
-
-    const [first, second] = await cards.evaluateAll(elements =>
-      elements.map(element => {
-        const { x, y } = element.getBoundingClientRect();
-        return { x, y };
-      }),
-    );
-    expect(first.x).toBe(second.x);
-    expect(first.y).toBeLessThan(second.y);
+    // Remove pointer hover before comparing the final card positions.
+    await page.mouse.move(0, 0);
+    for (const card of await cards.all()) {
+      await expect(card).toHaveCSS('transform', 'none');
+    }
+    for (const step of await education.locator('.education-step').all()) {
+      await expect(step).toHaveCSS('transform', 'none');
+    }
+    const rects = await cards.evaluateAll(elements => elements.map(element => {
+      const { x, y, width, height } = element.getBoundingClientRect();
+      return { x, y, width, height };
+    }));
+    const columns = width >= 1024 ? 3 : width >= 640 ? 2 : 1;
+    for (let i = 0; i < rects.length; i++) {
+      expect(rects[i].width).toBeCloseTo(rects[0].width, 0);
+      expect(rects[i].height).toBeCloseTo(rects[0].height, 0);
+      if (i < columns) expect(rects[i].y).toBeCloseTo(rects[0].y, 0);
+      else expect(rects[i].y).toBeGreaterThan(rects[0].y);
+      if (i > 0 && i < columns) expect(rects[i].x).toBeCloseTo(rects[i - 1].x + rects[i - 1].width + 16, 0);
+    }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await education.screenshot({ path: `test-results/education-${width}.png` });
+    if (width === 390 || width === 1440) await education.screenshot({ path: `test-results/education-${width}.png` });
   });
 }
 
 test('live code supports typing, pause, replay, viewport suspension and compilation', async ({ page }) => {
   test.setTimeout(60_000);
   await page.clock.install();
-  await page.goto('/');
+  await openPortfolio(page);
   const editor = page.getByRole('region', { name: 'Animated TypeScript demonstration' });
   await editor.scrollIntoViewIfNeeded();
   const code = editor.locator('pre');
@@ -165,7 +180,7 @@ test('live code supports typing, pause, replay, viewport suspension and compilat
 
 test('reduced motion shows complete code immediately in equal height lab panels', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await openPortfolio(page);
   await expect(page.getByText('Compiled successfully', { exact: false })).toBeVisible();
   const heights = await page.locator('.lab-panel').evaluateAll(elements => elements.map(element => element.getBoundingClientRect().height));
   expect(heights).toEqual([356, 356]);
@@ -177,7 +192,7 @@ test('reduced motion shows complete code immediately in equal height lab panels'
 });
 
 test('terminal runs every public command, handles history and clears output', async ({ page }) => {
-  await page.goto('/');
+  await openPortfolio(page);
   const input = page.getByRole('textbox', { name: 'Terminal command', exact: true });
   const output = page.getByRole('log');
   const command = async (text: string) => { await input.fill(text); await input.press('Enter'); };
@@ -206,7 +221,7 @@ test('terminal runs every public command, handles history and clears output', as
 
 test('secret commands animate locally, expire and provide a working contact action', async ({ page }) => {
   await page.clock.install();
-  await page.goto('/');
+  await openPortfolio(page);
   const input = page.getByRole('textbox', { name: 'Terminal command', exact: true });
   await input.fill('sudo hire amine'); await input.press('Enter');
   await expect(page.getByRole('log')).toContainText('ACCESS GRANTED ✓');
@@ -227,7 +242,7 @@ test('secret commands animate locally, expire and provide a working contact acti
 });
 
 test('project previews support card clicks, keyboard focus, Escape and outside click', async ({ page }) => {
-  await page.goto('/');
+  await openPortfolio(page);
   for (const name of ['CarRent', 'ElectroShop', 'LinguaLearn']) {
     const card = page.getByRole('article', { name: `${name} project card` });
     await card.focus(); await card.press('Enter');
@@ -249,7 +264,7 @@ test('project previews support card clicks, keyboard focus, Escape and outside c
 test('developer lab and project previews remain usable on mobile', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await openPortfolio(page);
   const panels = await page.locator('.lab-panel').evaluateAll(elements => elements.map(element => { const rect = element.getBoundingClientRect(); return { x: rect.x, y: rect.y, bottom: rect.bottom, width: rect.width }; }));
   expect(panels[1].x).toEqual(panels[0].x); expect(panels[1].y).toBeGreaterThan(panels[0].bottom);
   const input = page.getByRole('textbox', { name: 'Terminal command', exact: true });

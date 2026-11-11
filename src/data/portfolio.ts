@@ -13,14 +13,16 @@ export const profile: Profile = {
 export const education: EducationEntry[] = [
   {
     id: 'baccalaureat',
-    degree: 'Baccalauréat Sciences Physiques',
+    degree: 'Baccalauréat',
+    specialization: 'Sciences Physiques',
     icon: 'science',
     year: 2021,
     status: 'Completed',
   },
   {
     id: 'digital-development',
-    degree: 'Diplôme de Technicien Spécialisé en Développement Digital',
+    degree: 'Technicien Spécialisé',
+    field: 'Développement Digital',
     icon: 'diploma',
     institution: 'OFPPT',
     specialization: 'Full Stack Development',

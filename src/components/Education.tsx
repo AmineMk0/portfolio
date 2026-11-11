@@ -1,5 +1,5 @@
-import { motion, useReducedMotion } from 'framer-motion';
-import { FlaskConical, GraduationCap, ScrollText } from 'lucide-react';
+﻿import { motion, useReducedMotion } from 'framer-motion';
+import { Code2, GraduationCap, Laptop } from 'lucide-react';
 import type { EducationEntry } from '../types';
 import './education.css';
 
@@ -8,9 +8,9 @@ interface EducationProps {
 }
 
 const educationIcons = {
-  science: FlaskConical,
-  diploma: ScrollText,
-  degree: GraduationCap,
+  science: GraduationCap,
+  diploma: Code2,
+  degree: Laptop,
 };
 
 export function Education({ entries }: EducationProps) {
@@ -20,13 +20,14 @@ export function Education({ entries }: EducationProps) {
     <section id="education" className="education" aria-labelledby="education-heading">
       <div className="section-header">
         <div>
-          <h2 id="education-heading"><span>//</span> EDUCATION_JOURNEY</h2>
+          <h2 id="education-heading"><span>//</span> EDUCATION</h2>
           <p className="section-subtitle">My academic background and continuous learning journey.</p>
         </div>
       </div>
-      <ol className="education-timeline" role="list">
+      <ol className="education-grid" role="list">
         {entries.map((entry, index) => {
           const current = entry.status === 'Currently Studying';
+          const status = current ? 'IN PROGRESS' : 'COMPLETED';
           const Icon = educationIcons[entry.icon];
 
           return (
@@ -37,36 +38,27 @@ export function Education({ entries }: EducationProps) {
               whileInView="visible"
               viewport={{ once: true, amount: 0.25 }}
             >
-              {index < entries.length - 1 && (
-                <motion.span
-                  className="education-connector"
-                  aria-hidden="true"
-                  variants={{
-                    hidden: { '--education-line-progress': 0 },
-                    visible: { '--education-line-progress': 1 },
-                  }}
-                  transition={{ duration: reducedMotion ? 0 : 0.45, delay: reducedMotion ? 0 : index * 0.08, ease: 'easeOut' }}
-                />
-              )}
-              <span className="education-marker" aria-hidden="true" />
               <motion.article
                 className="education-card"
                 variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
-                transition={{ duration: reducedMotion ? 0 : 0.28, delay: reducedMotion ? 0 : index * 0.08, ease: 'easeOut' }}
+                transition={{ duration: reducedMotion ? 0 : 0.25, delay: reducedMotion ? 0 : index * 0.08, ease: 'easeOut' }}
               >
                 <div className="education-card-meta">
-                  <div className="education-card-details">
-                    <span className="education-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-                    {entry.year && <time dateTime={String(entry.year)}>{entry.year}</time>}
-                    {entry.institution && <span>{entry.institution}</span>}
-                  </div>
+                  <span className="education-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+                  {entry.year ? <time dateTime={String(entry.year)}>{entry.year}</time> : <span>{status}</span>}
+                </div>
+                <span className="education-icon"><Icon size={20} aria-hidden="true" /></span>
+                <h3>{entry.degree}</h3>
+                {entry.field && <p className="education-field">{entry.field}</p>}
+                {entry.specialization && <p className="education-specialization">{entry.specialization}</p>}
+                {entry.institution && <p className="education-institution">{entry.institution}</p>}
+                <div className="education-card-bottom">
                   <span className={current ? 'education-status education-status-current' : 'education-status'}>
                     {current && <span className="status-dot" aria-hidden="true" />}
-                    {current ? 'IN PROGRESS' : entry.status}
+                    {status}
                   </span>
+                  {current && <p className="education-subtitle">Currently Studying</p>}
                 </div>
-                <h3><Icon size={15} aria-hidden="true" /><span>{entry.degree}</span></h3>
-                {entry.specialization && <p>{entry.specialization}</p>}
               </motion.article>
             </motion.li>
           );

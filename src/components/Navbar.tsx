@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
+import type { Ref } from 'react';
 import { Maximize, Minimize, Menu, X } from 'lucide-react';
 import { profile } from '../data/portfolio';
 
 const links = [['home', '01_HOME'], ['about', '02_ABOUT'], ['projects', '03_PROJECTS'], ['stack', '04_STACK'], ['contact', '05_CONTACT'], ['education', '06_EDUCATION']] as const;
 
-export function Navbar() {
+export function Navbar({ logoRef }: { logoRef?: Ref<HTMLSpanElement> }) {
   const [active, setActive] = useState('home');
   const [open, setOpen] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
@@ -49,7 +50,7 @@ export function Navbar() {
     } catch { /* Unsupported browser: keep the page usable. */ }
   }
   return <header className="navbar">
-    <a href="#home" className="identity" aria-label={`${profile.name}, home`}><span className="logo">{profile.name.split(/\s+/).map(part => part[0]).join('')}</span><span className="identity-name">{profile.name.toUpperCase()}</span><span className="identity-role">{profile.role.toUpperCase()}</span><span className="status-dot" title="Available for projects" /></a>
+    <a href="#home" className="identity" aria-label={`${profile.name}, home`}><span ref={logoRef} className="logo">{profile.name.split(/\s+/).map(part => part[0]).join('')}</span><span className="identity-name">{profile.name.toUpperCase()}</span><span className="identity-role">{profile.role.toUpperCase()}</span><span className="status-dot" title="Available for projects" /></a>
     <button className="icon-button mobile-menu" onClick={() => setOpen(!open)} aria-label={open ? 'Close navigation' : 'Open navigation'} aria-expanded={open} aria-controls="main-navigation">{open ? <X /> : <Menu />}</button>
     <nav id="main-navigation" className={open ? 'navigation is-open' : 'navigation'} aria-label="Main navigation">{links.map(([id, label]) => <a key={id} href={`#${id}`} className={active === id ? 'active' : ''} aria-current={active === id ? 'location' : undefined} onClick={() => { setActive(id); setOpen(false); }}>{label}</a>)}</nav>
     <button className="icon-button fullscreen-button" onClick={toggleFullscreen} aria-label={fullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}>{fullscreen ? <Minimize /> : <Maximize />}</button>

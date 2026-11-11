@@ -14,6 +14,7 @@ export interface Project {
 export interface EducationEntry {
   id: string;
   degree: string;
+  field?: string;
   icon: 'science' | 'diploma' | 'degree';
   year?: number;
   institution?: string;

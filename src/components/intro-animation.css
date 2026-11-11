@@ -1,0 +1,52 @@
+.intro-animation {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  isolation: isolate;
+  color: #111827;
+}
+
+.intro-backdrop { position: absolute; inset: 0; background: #fff; }
+
+.intro-logo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  margin: 0;
+  visibility: hidden;
+  transform-origin: top left;
+  will-change: transform;
+  white-space: nowrap;
+  animation: intro-logo-draw 600ms ease-out both;
+}
+
+/* Outline first, then fill: keep the navbar's actual font and letter shapes. */
+@keyframes intro-logo-draw {
+  0% { clip-path: inset(0 100% 0 0); -webkit-text-fill-color: transparent; -webkit-text-stroke: 0.5px currentColor; }
+  70% { clip-path: inset(0); -webkit-text-fill-color: transparent; -webkit-text-stroke: 0.5px currentColor; filter: drop-shadow(0 0 2px #00a82d22); }
+  100% { clip-path: inset(0); -webkit-text-fill-color: currentColor; -webkit-text-stroke: 0 transparent; filter: none; }
+}
+
+.intro-caption {
+  position: absolute;
+  top: calc(50% + 76px);
+  left: 0;
+  width: 100%;
+  padding: 0 20px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.intro-name { font-size: clamp(14px, 3vw, 18px); font-weight: 700; letter-spacing: 0.16em; }
+.intro-name span { display: inline-block; }
+.intro-subtitle { margin-top: 10px; color: #697586; font-size: 10px; letter-spacing: 0.15em; }
+.intro-skip { position: absolute; top: max(24px, env(safe-area-inset-top)); right: max(24px, env(safe-area-inset-right)); padding: 10px 2px; font-size: 10px; color: #52616c; transition: color 250ms; }
+.intro-skip:hover { color: var(--green); }
+.intro-animation[data-phase='revealing'] .intro-skip { visibility: hidden; }
+.intro-animation[data-skipping] .intro-logo { animation: none; }
+.intro-running .navbar .logo { visibility: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-animation { display: none; }
+  .intro-running .navbar .logo { visibility: visible; }
+}

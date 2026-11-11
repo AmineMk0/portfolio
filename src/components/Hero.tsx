@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { ArrowDown, ArrowUpRight, Download, X } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { profile } from '../data/portfolio';
 import { MoroccoFlag } from './MoroccoFlag';
 
-export function Hero() {
+export function Hero({ revealed = true }: { revealed?: boolean }) {
+  const reducedMotion = useReducedMotion();
   const [notice, setNotice] = useState(false);
   const details = [['WHO_AM_I', profile.name], ['ROLE', profile.role], ['LOCATION', profile.location], ['EXPERIENCE', profile.experience], ['AVAILABILITY', profile.availability]];
-  return <motion.section className="hero" aria-label="Introduction" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .45 }}>
+  return <motion.section className="hero" aria-label="Introduction" initial={reducedMotion ? false : { opacity: 0, y: 10 }} animate={{ opacity: revealed ? 1 : 0, y: revealed || reducedMotion ? 0 : 10 }} transition={{ duration: reducedMotion ? 0 : .45 }}>
     <div className="hero-copy"><div className="terminal-intro"><p><span>&gt;</span> INITIALIZING_PORTFOLIO.EXE<span className="cursor" aria-hidden="true">_</span></p><p><span>&gt;</span> STATUS: <strong>ONLINE</strong></p></div>
       <h1>Building Systems<br />Behind the <span>Interface.</span></h1>
       <p className="hero-description">I design and build scalable digital products with clean architecture, focused on real problems and measurable impact.</p>
